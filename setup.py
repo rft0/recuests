@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 module = Extension("recuests", sources = [
-    "src/request.c",
+    "src/client.c",
     "src/callback.c",
     "src/hashmap.c",
     "src/wrappers.c",
