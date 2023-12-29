@@ -42,3 +42,7 @@ def delete(url: str, headers: Optional[Dict[str, str]] = None) -> Response:
 
     return Response(r.body, r.status, r.headers)
 ```
+
+### Requirements
+* Precompiled binaries only for linux (yet you can still generate yours with make)
+* Only tested with python 3.11
