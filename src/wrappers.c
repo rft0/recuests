@@ -167,3 +167,275 @@ PyObject* Py_RequestGET(PyObject* self, PyObject* args) {
 
     return (PyObject*)pyRes;
 }
+
+PyObject* Py_RequestPOST(PyObject* self, PyObject* args) {
+    char* url;
+    PyObject* headersObj = Py_None;
+    char* reqBody;
+
+    if (!PyArg_ParseTuple(args, "s|Os", &url, &headersObj, &reqBody)) {
+        return NULL;
+    }
+
+    if (headersObj != Py_None && !PyDict_Check(headersObj)) {
+        PyErr_SetString(PyExc_TypeError, "Headers must be a dictionary.");
+        return NULL;
+    }
+
+    HTTPHeader* headers = NULL;
+    Py_ssize_t numHeaders = 0;
+    if (headersObj != Py_None)
+        numHeaders = PyDict_Size(headersObj);
+
+    if (headersObj != Py_None && numHeaders > 0) {
+        PyObject* key;
+        PyObject* value;
+        Py_ssize_t pos = 0;
+        size_t i = 0;
+
+        headers = malloc(sizeof(HTTPHeader) * numHeaders);
+
+        while (PyDict_Next(headersObj, &pos, &key, &value)) {
+            if (!PyUnicode_Check(key) || !PyUnicode_Check(value)) {
+                PyErr_SetString(PyExc_TypeError, "Headers must be a dictionary of strings.");
+                return NULL;
+            }
+
+            const char* keyStr = PyUnicode_AsUTF8(key);
+            const char* valueStr = PyUnicode_AsUTF8(value);
+
+            headers[i].key = malloc(sizeof(char) * (strlen(keyStr) + 1));
+            headers[i].value = malloc(sizeof(char) * (strlen(valueStr) + 1));
+
+            if (headers[i].key == NULL || headers[i].value == NULL) {
+                PyErr_SetString(PyExc_MemoryError, "malloc() failed for key or value.");
+                return NULL;
+            }
+
+            strcpy(headers[i].key, keyStr);
+            strcpy(headers[i].value, valueStr);
+
+            i++;
+        }
+    }
+
+    Response res = RequestPOST(url, headers, reqBody);
+
+    if (headers != NULL) {
+        for (size_t i = 0; i < (size_t)numHeaders; i++) {
+            free(headers[i].key);
+            free(headers[i].value);
+        }
+        free(headers);
+    }
+
+    if (PyType_Ready(&PyResponseType) < 0) {
+        FreeResponse(&res);
+        PyErr_Print();
+        return Py_None;
+    }
+
+    PyResponse* pyRes = (PyResponse*)PyResponseType.tp_alloc(&PyResponseType, 0);
+    if (pyRes == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "malloc() failed for response.");
+        return NULL;
+    }
+
+    PyObject* pyHeaders = PyDict_New();
+    hashmap_iterate(res.headers, HashmapToDict, pyHeaders);
+    if (res.body != NULL)
+        pyRes->body = PyBytes_FromString(res.body);
+    else
+        pyRes->body = Py_None;
+
+    if (res.headers != NULL)
+        pyRes->headers = pyHeaders;
+    else
+        pyRes->headers = Py_None;
+
+    pyRes->status = res.status;
+    FreeResponse(&res);
+
+    return (PyObject*)pyRes;
+}
+
+PyObject* Py_RequestPUT(PyObject* self, PyObject* args) {
+    char* url;
+    PyObject* headersObj = Py_None;
+    char* reqBody;
+
+    if (!PyArg_ParseTuple(args, "s|Os", &url, &headersObj, &reqBody)) {
+        return NULL;
+    }
+
+    if (headersObj != Py_None && !PyDict_Check(headersObj)) {
+        PyErr_SetString(PyExc_TypeError, "Headers must be a dictionary.");
+        return NULL;
+    }
+
+    HTTPHeader* headers = NULL;
+    Py_ssize_t numHeaders = 0;
+    if (headersObj != Py_None)
+        numHeaders = PyDict_Size(headersObj);
+
+    if (headersObj != Py_None && numHeaders > 0) {
+        PyObject* key;
+        PyObject* value;
+        Py_ssize_t pos = 0;
+        size_t i = 0;
+
+        headers = malloc(sizeof(HTTPHeader) * numHeaders);
+
+        while (PyDict_Next(headersObj, &pos, &key, &value)) {
+            if (!PyUnicode_Check(key) || !PyUnicode_Check(value)) {
+                PyErr_SetString(PyExc_TypeError, "Headers must be a dictionary of strings.");
+                return NULL;
+            }
+
+            const char* keyStr = PyUnicode_AsUTF8(key);
+            const char* valueStr = PyUnicode_AsUTF8(value);
+
+            headers[i].key = malloc(sizeof(char) * (strlen(keyStr) + 1));
+            headers[i].value = malloc(sizeof(char) * (strlen(valueStr) + 1));
+
+            if (headers[i].key == NULL || headers[i].value == NULL) {
+                PyErr_SetString(PyExc_MemoryError, "malloc() failed for key or value.");
+                return NULL;
+            }
+
+            strcpy(headers[i].key, keyStr);
+            strcpy(headers[i].value, valueStr);
+
+            i++;
+        }
+    }
+
+    Response res = RequestPOST(url, headers, reqBody);
+
+    if (headers != NULL) {
+        for (size_t i = 0; i < (size_t)numHeaders; i++) {
+            free(headers[i].key);
+            free(headers[i].value);
+        }
+        free(headers);
+    }
+
+    if (PyType_Ready(&PyResponseType) < 0) {
+        FreeResponse(&res);
+        PyErr_Print();
+        return Py_None;
+    }
+
+    PyResponse* pyRes = (PyResponse*)PyResponseType.tp_alloc(&PyResponseType, 0);
+    if (pyRes == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "malloc() failed for response.");
+        return NULL;
+    }
+
+    PyObject* pyHeaders = PyDict_New();
+    hashmap_iterate(res.headers, HashmapToDict, pyHeaders);
+    if (res.body != NULL)
+        pyRes->body = PyBytes_FromString(res.body);
+    else
+        pyRes->body = Py_None;
+
+    if (res.headers != NULL)
+        pyRes->headers = pyHeaders;
+    else
+        pyRes->headers = Py_None;
+
+    pyRes->status = res.status;
+    FreeResponse(&res);
+
+    return (PyObject*)pyRes;
+}
+
+PyObject* Py_RequestDELETE(PyObject* self, PyObject* args) {
+    char* url;
+    PyObject* headersObj = Py_None;
+
+    if (!PyArg_ParseTuple(args, "s|O", &url, &headersObj)) {
+        return NULL;
+    }
+
+    if (headersObj != Py_None && !PyDict_Check(headersObj)) {
+        PyErr_SetString(PyExc_TypeError, "Headers must be a dictionary.");
+        return NULL;
+    }
+
+    HTTPHeader* headers = NULL;
+    Py_ssize_t numHeaders = 0;
+    if (headersObj != Py_None)
+        numHeaders = PyDict_Size(headersObj);
+
+    if (headersObj != Py_None && numHeaders > 0) {
+        PyObject* key;
+        PyObject* value;
+        Py_ssize_t pos = 0;
+        size_t i = 0;
+
+        headers = malloc(sizeof(HTTPHeader) * numHeaders);
+
+        while (PyDict_Next(headersObj, &pos, &key, &value)) {
+            if (!PyUnicode_Check(key) || !PyUnicode_Check(value)) {
+                PyErr_SetString(PyExc_TypeError, "Headers must be a dictionary of strings.");
+                return NULL;
+            }
+
+            const char* keyStr = PyUnicode_AsUTF8(key);
+            const char* valueStr = PyUnicode_AsUTF8(value);
+
+            headers[i].key = malloc(sizeof(char) * (strlen(keyStr) + 1));
+            headers[i].value = malloc(sizeof(char) * (strlen(valueStr) + 1));
+
+            if (headers[i].key == NULL || headers[i].value == NULL) {
+                PyErr_SetString(PyExc_MemoryError, "malloc() failed for key or value.");
+                return NULL;
+            }
+
+            strcpy(headers[i].key, keyStr);
+            strcpy(headers[i].value, valueStr);
+
+            i++;
+        }
+    }
+
+    Response res = RequestGET(url, headers);
+
+    if (headers != NULL) {
+        for (size_t i = 0; i < (size_t)numHeaders; i++) {
+            free(headers[i].key);
+            free(headers[i].value);
+        }
+        free(headers);
+    }
+
+    if (PyType_Ready(&PyResponseType) < 0) {
+        FreeResponse(&res);
+        PyErr_Print();
+        return Py_None;
+    }
+
+    PyResponse* pyRes = (PyResponse*)PyResponseType.tp_alloc(&PyResponseType, 0);
+    if (pyRes == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "malloc() failed for response.");
+        return NULL;
+    }
+
+    PyObject* pyHeaders = PyDict_New();
+    hashmap_iterate(res.headers, HashmapToDict, pyHeaders);
+    if (res.body != NULL)
+        pyRes->body = PyBytes_FromString(res.body);
+    else
+        pyRes->body = Py_None;
+
+    if (res.headers != NULL)
+        pyRes->headers = pyHeaders;
+    else
+        pyRes->headers = Py_None;
+
+    pyRes->status = res.status;
+    FreeResponse(&res);
+
+    return (PyObject*)pyRes;
+}
