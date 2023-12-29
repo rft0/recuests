@@ -153,7 +153,7 @@ PyObject* Py_RequestGET(PyObject* self, PyObject* args) {
     PyObject* pyHeaders = PyDict_New();
     hashmap_iterate(res.headers, HashmapToDict, pyHeaders);
     if (res.body != NULL)
-        pyRes->body = PyUnicode_FromStringAndSize(res.body, res.bodySize);
+        pyRes->body = PyBytes_FromString(res.body);
     else
         pyRes->body = Py_None;
 
