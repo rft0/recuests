@@ -3,8 +3,6 @@
 
 #include "client.h"
 
-#define RC_DEBUG
-
 typedef struct {
     PyObject_HEAD
     PyObject* body;
