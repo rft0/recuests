@@ -1,4 +1,5 @@
 import recuests.recuests as rec
+import json
 
 from typing import Dict, Optional
 
@@ -9,7 +10,7 @@ class Response:
         self.status = status
 
     def json(self) -> dict:
-        return self.body
+        return json.loads(self.body)
 
     def __str__(self) -> str:
         return self.body
