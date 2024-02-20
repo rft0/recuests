@@ -3,25 +3,18 @@ Python bindings for my [HTTP client](https://github.com/epsilonr/httpclient) as 
 
 ### Struct of Response
 ```py
+@final
 class Response:
-    def __init__(self, body: str, status: int, headers: dict):
-        self.body = body
-        self.headers = headers
-        self.status = status
-
-    def json(self) -> dict:
-        return json.loads(self.body)
-
-    def __str__(self) -> str:
-        return self.body
-
-    def __repr__(self) -> str:
-        return f"<Response {self.status}>"
+    body: str
+    headers: dict
+    status: int
 ```
 
 
 ### Methods
 ```py
+All methods are overloaded by C library.
+
 def get(url: str, headers: Optional[Dict[str, str]] = None) -> Response:
 
 def post(url: str, headers: Optional[Dict[str, str]] = None, data: str = "") -> Response:
