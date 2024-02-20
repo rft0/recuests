@@ -12,9 +12,9 @@ class Response:
 
 
 ### Methods
-```py
 All methods are overloaded by C library.
 
+```py
 def get(url: str, headers: Optional[Dict[str, str]] = None) -> Response:
 
 def post(url: str, headers: Optional[Dict[str, str]] = None, data: str = "") -> Response:
